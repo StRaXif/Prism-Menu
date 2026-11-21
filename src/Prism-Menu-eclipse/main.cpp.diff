@@ -1,0 +1,47 @@
+--- src/main.cpp	2026-04-07 23:40:22.000000000 +0000
++++ /tmp/pm/Prism-Menu-main/src/main.cpp	2026-11-21 08:31:52.004822047 +0000
+@@ -149,6 +149,9 @@
+ 
+ // remove when custom keybinds is fixed
+ #ifndef GEODE_IS_IOS
++#ifdef GEODE_IS_WINDOWS
++#include <Windows.h> // GetAsyncKeyState for Right Shift detection
++#endif
+ #include <Geode/modify/CCKeyboardDispatcher.hpp>
+ class $modify(CCKeyboardDispatcher) {
+     bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool isKeyRepeat, double p0) {
+@@ -158,9 +161,15 @@
+             if (auto charUI = typeinfo_cast<CharUI*>(CCScene::get()->getChildByID("prism-charui"))) {
+                 charUI->keyPressed(key);
+             } else {
+-                HackItem* keybind = Hacks::getHack("Menu Keybind");
+-                int currentKeyID = (keybind != nullptr) ? keybind->value.intValue : 9;
+-                if (static_cast<int>(key) == currentKeyID) {
++                // menu is now opened with Right Shift (was Tab / "Menu Keybind")
++                bool isRightShift = (key == KEY_RightShift);
++                #ifdef GEODE_IS_WINDOWS
++                // some GD builds report any shift as KEY_Shift/KEY_LeftShift, so ask Windows which one it really is
++                if (key == KEY_Shift || key == KEY_LeftShift) {
++                    isRightShift = (GetAsyncKeyState(VK_RSHIFT) & 0x8000) != 0;
++                }
++                #endif
++                if (isRightShift && !isKeyRepeat) {
+                     auto prismButton = typeinfo_cast<PrismButton*>(OverlayManager::get()->getChildByID("prism-icon"));
+                     HackItem* menuStyle = Hacks::getHack("Menu-Style");
+                     #ifdef NO_IMGUI 
+@@ -204,14 +213,7 @@
+ class $modify(PauseLayer) {
+     void customSetup() {
+         PauseLayer::customSetup();
+-        if (!Mod::get()->getSettingValue<bool>("hide-button")) {
+-            if (auto menu = this->getChildByID("center-button-menu")) {
+-                auto button = PrismButton::createButton(this);
+-                menu->addChild(button);
+-                menu->reorderChild(button, -1);
+-                menu->updateLayout();
+-            }
+-        }
++        // pause-menu button removed (menu opens only with Right Shift)
+         
+     }
+ };

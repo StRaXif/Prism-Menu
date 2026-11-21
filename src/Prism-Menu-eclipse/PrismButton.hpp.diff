@@ -1,0 +1,21 @@
+--- src/PrismButton.hpp	2026-04-07 23:40:22.000000000 +0000
++++ /tmp/pm/Prism-Menu-main/src/PrismButton.hpp	2026-11-21 08:31:52.004421841 +0000
+@@ -44,6 +44,7 @@
+         this->setID("prism-icon");
+         currentTouchPrio = this->getTouchPriority();
+         this->scheduleUpdate();
++        CCMenu::setVisible(false);
+         return true;
+     }
+     void update(float) override {
+@@ -86,7 +87,10 @@
+     float getRadius() {
+         return m_button->getScaledContentSize().width / 2.f;
+     }
++    // on-screen button removed: the menu is opened only with Right Shift
++    void setVisible(bool) override { CCMenu::setVisible(false); }
+     bool ccTouchBegan(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) override {
++        return false;
+         if (!m_button->isVisible() || !this->isVisible() || !isEnabled()) return false;
+         auto touchPos = this->convertToNodeSpace(touch->getLocation());
+         auto spritePos = m_button->getPosition();
